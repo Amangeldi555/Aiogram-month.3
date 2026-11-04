@@ -19,24 +19,24 @@ async def add_start_fsm(message: Message, state: FSMContext):
 @router_add_name.message(Addlesson.name)
 async def add_name(message: Message, state: FSMContext):
     name = message.text
-    if name.isdigit():
-        await message.answer('Пожалуйста, введите корректное имя.')
-        name = None
-        await message.answer('Введите ваш имя: ')
-        await state.set_state(Addlesson.name)
-    else:
-        await state.update_data(name=name)
-        await state.set_state(Addlesson.age)
-        await message.answer('Введите ваш возраст: ')
+    await state.update_data(name=name)
+    await state.set_state(Addlesson.age)
+    await message.answer('Введите ваш возраст: ')
     
 
 @router_add_name.message(Addlesson.age)
 async def add_age(message: Message, state: FSMContext):
     age = message.text
-    await state.update_data(age=age)
-    await message.answer(f'Ваш возраст: {age}')
-    await state.set_state(Addlesson.phone_number)
-    await message.answer('Введите ваш номер телефона: ')
+    if not age.isdigit():
+        await message.answer('Пожалуйста, введите корректный возраст.')
+        age = None
+        await message.answer('Введтите ваш возраст:')
+        await state.set_state(Addlesson.age)
+    else:
+        await state.update_data(age=age)
+        await message.answer(f'Ваш возраст: {age}')
+        await state.set_state(Addlesson.phone_number)
+        await message.answer('Введите ваш номер телефона: ')
 
 @router_add_name.message(Addlesson.phone_number)
 async def add_phone_number(message: Message, state: FSMContext):
