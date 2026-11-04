@@ -1,0 +1,9 @@
+
+CREATE_DRINKS_TABLE = """
+CREATE TABLE IF NOT EXISTS drinks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    drink_type TEXT NOT NULL,
+    price REAL NOT NULL
+);
+"""
