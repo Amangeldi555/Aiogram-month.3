@@ -4,6 +4,7 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from database.db import get_all_drinks
 
 from database import db
 
@@ -15,6 +16,28 @@ class AddDrink(StatesGroup):
     price = State()
 
 router_add_title = Router()
+
+@router_add_title.message(Command("drinks"))
+async def show_all_drinks(message: Message, state: FSMContext):
+
+    drinks = await get_all_drinks()
+
+    if not drinks:
+        await message.answer("В базе данных пока нет напитков.")
+        return
+
+    text = "Список всех напитков:\n\n"
+
+    for drink in drinks:
+        text += (
+            f" ID: {drink['id']}\n"
+            f" Название: {drink['title']}\n"
+            f" Тип: {drink['drink_type']}\n"
+            f" Цена: {drink['price']} сом\n"
+            f"━━━━━━━━━━━━━━\n"
+        )
+
+    await message.answer(text)
 
 
 @router_add_title.message(Command("add_drink"))

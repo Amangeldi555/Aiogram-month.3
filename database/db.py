@@ -74,6 +74,14 @@ async def get_users():
         async with conn.execute("SELECT * FROM users") as cursor:
             return await cursor.fetchall()
 
+async def get_all_drinks():
+    async with aiosqlite.connect(path_db) as conn:
+        conn.row_factory = aiosqlite.Row
+
+        async with conn.execute("SELECT * FROM drinks") as cursor:
+            drinks = await cursor.fetchall()
+
+        return drinks
 
 
 
