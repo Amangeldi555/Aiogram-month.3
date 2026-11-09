@@ -1,24 +1,38 @@
+
 import asyncio
 import logging
 
 from config import bot, dp
-from handlers import commands, echo, fsm_add_product, fsm_add_drink
-from database.db import init_db
+from handlers import commands, fsm_add_drink, fsm_add_user, echo
+from database.db import init_db, get_users
 
 
-dp.include_router(router=commands.router_commands)
-dp.include_router(router=fsm_add_product.router_add_name)
-dp.include_router(router=fsm_add_drink.router_add_title)
-dp.include_router(router=echo.router_echo)
+async def on_startup(bot):
+    await init_db()
+
+    users = await get_users()
+    print("ВСЕ ПОЛЬЗОВАТЕЛИ:", users)
+
+    await bot.send_message(
+        chat_id=5221584049,
+        text="Бот успешно запущен!"
+    )
+
+
+dp.include_router(commands.router_commands)
+dp.include_router(fsm_add_drink.router_add_title)
+dp.include_router(fsm_add_user.router_add_user)
+dp.include_router(echo.router_echo)
+
+dp.startup.register(on_startup)
 
 
 async def main():
-    init_db()
+    print("ПОДКЛЮЧЕННЫЕ РОУТЕРЫ:")
+    print(dp.sub_routers)
+    print("РОУТЕР ПОЛЬЗОВАТЕЛЕЙ:", fsm_add_user.router_add_user)
     await dp.start_polling(bot)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
-
-    

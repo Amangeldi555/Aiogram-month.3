@@ -1,0 +1,4 @@
+-- database: /Users/amangeldimunduzbaev/Documents/month3/database/drinks.db
+
+SELECT * FROM users
+ORDER BY `name` DESC;
