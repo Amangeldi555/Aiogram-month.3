@@ -186,5 +186,6 @@ pyvenv.cfg
 pip-selfcheck.json
 pyvenv.cfg
 drinks.db
+.DS_Store
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv
