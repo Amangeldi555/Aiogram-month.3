@@ -4,9 +4,12 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from database.db import get_all_drinks
 
-from database import db
+from database.main_db import (
+    get_all_drinks,
+    add_drink,
+    add_drink_details
+)
 
 
 class AddDrink(StatesGroup):
@@ -15,10 +18,13 @@ class AddDrink(StatesGroup):
     description = State()
     price = State()
 
+
 router_add_title = Router()
 
+
+# Показать все напитки
 @router_add_title.message(Command("drinks"))
-async def show_all_drinks(message: Message, state: FSMContext):
+async def show_all_drinks(message: Message):
 
     drinks = await get_all_drinks()
 
@@ -30,23 +36,27 @@ async def show_all_drinks(message: Message, state: FSMContext):
 
     for drink in drinks:
         text += (
-            f" ID: {drink['id']}\n"
-            f" Название: {drink['title']}\n"
-            f" Тип: {drink['drink_type']}\n"
-            f" Цена: {drink['price']} сом\n"
+            f"ID: {drink['id']}\n"
+            f"Название: {drink['title']}\n"
+            f"Тип: {drink['drink_type']}\n"
+            f"Описание: {drink['description']}\n"
+            f"Цена: {drink['price']} сом\n"
             f"━━━━━━━━━━━━━━\n"
         )
 
     await message.answer(text)
 
 
+# Начало добавления напитка
 @router_add_title.message(Command("add_drink"))
-async def add_drink(message: Message, state: FSMContext):
+async def start_add_drink(message: Message, state: FSMContext):
     await state.clear()
+
     await message.answer("Введите название напитка:")
     await state.set_state(AddDrink.title)
 
 
+# Название
 @router_add_title.message(AddDrink.title)
 async def add_title(message: Message, state: FSMContext):
     await state.update_data(title=message.text)
@@ -55,6 +65,7 @@ async def add_title(message: Message, state: FSMContext):
     await state.set_state(AddDrink.type)
 
 
+# Тип
 @router_add_title.message(AddDrink.type)
 async def add_type(message: Message, state: FSMContext):
     await state.update_data(type=message.text)
@@ -63,6 +74,7 @@ async def add_type(message: Message, state: FSMContext):
     await state.set_state(AddDrink.description)
 
 
+# Описание
 @router_add_title.message(AddDrink.description)
 async def add_description(message: Message, state: FSMContext):
     await state.update_data(description=message.text)
@@ -71,32 +83,46 @@ async def add_description(message: Message, state: FSMContext):
     await state.set_state(AddDrink.price)
 
 
+# Цена и сохранение в две таблицы
 @router_add_title.message(AddDrink.price)
 async def add_price(message: Message, state: FSMContext):
+
     try:
         price = float(message.text.replace(",", "."))
+
         if price <= 0:
             raise ValueError
+
     except (ValueError, TypeError):
         await message.answer("Введите корректную цену числом!")
         return
 
     data = await state.get_data()
 
-    title = data.get("title")
-    drink_type = data.get("type")
-    description = data.get("description")
+    title = data["title"]
+    drink_type = data["type"]
+    description = data["description"]
 
     try:
-        await db.add_drink(
+        # Сохраняем напиток в первую таблицу
+        drink_id = await add_drink(
             title=title,
             drink_type=drink_type,
-            price=price,
-            description=description
+            price=price
         )
+
+        # Сохраняем описание во вторую таблицу
+        await add_drink_details(
+            description=description,
+            drink_id=drink_id
+        )
+
     except Exception as error:
         print(f"Ошибка сохранения: {error}")
-        await message.answer("Не удалось сохранить напиток. Проверьте базу данных.")
+
+        await message.answer(
+            "Не удалось сохранить напиток. Проверьте базу данных."
+        )
         return
 
     await message.answer(
@@ -104,7 +130,8 @@ async def add_price(message: Message, state: FSMContext):
         f"Название: {title}\n"
         f"Тип: {drink_type}\n"
         f"Описание: {description}\n"
-        f"Цена: {price}"
+        f"Цена: {price} сом\n"
+        f"ID напитка: {drink_id}"
     )
 
     await state.clear()
