@@ -1,13 +1,19 @@
 
-from pathlib import Path
-
 from aiogram import Bot, Dispatcher
 from decouple import config
 
-BASE_DIR = Path(__file__).resolve().parent
-path_db = str(BASE_DIR / "database" / "drinks.db")
 
-token = config("TOKEN")
+# Токен Telegram-бота из .env
+TOKEN = config("TOKEN")
 
-bot = Bot(token=token)
+# Секретный ключ администратора из .env
+ADMIN_SECRET_KEY = config("ADMIN_SECRET_KEY")
+
+# Создание бота
+bot = Bot(token=TOKEN)
+
+# Создание диспетчера
 dp = Dispatcher()
+
+# Путь к базе данных
+path_db = "database/drinks.db"

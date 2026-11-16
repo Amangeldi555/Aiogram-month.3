@@ -1,6 +1,9 @@
 
 import asyncio
 import logging
+from config import ADMIN_SECRET_KEY
+
+print("Секретный ключ подключен:", bool(ADMIN_SECRET_KEY))
 
 from config import bot, dp
 from handlers import (
@@ -8,7 +11,9 @@ from handlers import (
     fsm_add_drink,
     fsm_add_user,
     echo,
-    select_all_drinks
+    select_all_drinks,
+    admin,
+    delete_fsm
 )
 
 from database.main_db import init_db, get_users
@@ -27,10 +32,12 @@ async def on_startup(bot):
 
 
 # Подключение роутеров
+dp.include_router(admin.router_admin)
 dp.include_router(commands.router_commands)
 dp.include_router(fsm_add_drink.router_add_title)
 dp.include_router(fsm_add_user.router_add_user)
 dp.include_router(select_all_drinks.router_all_drinks)
+dp.include_router(delete_fsm.router_delete)
 dp.include_router(echo.router_echo)
 
 dp.startup.register(on_startup)

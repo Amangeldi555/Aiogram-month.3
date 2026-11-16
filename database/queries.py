@@ -50,6 +50,16 @@ SELECT
     drinks.price,
     drink_details.description
 FROM drinks
-INNER JOIN drink_details
+LEFT JOIN drink_details
 ON drinks.id = drink_details.drink_id;
 """
+delete_drink_details = """
+DELETE FROM drink_details
+WHERE drink_id = ?;
+"""
+
+delete_drink = """
+DELETE FROM drinks
+WHERE id = ?;
+"""
+

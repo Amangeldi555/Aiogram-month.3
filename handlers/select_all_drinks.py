@@ -1,9 +1,12 @@
-
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
-from database.main_db import get_all_drinks
+from database.main_db import get_all_drinks, is_admin
 
 
 router_all_drinks = Router()
@@ -18,10 +21,22 @@ async def show_all_drinks(message: Message):
         return
 
     for drink in drinks:
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="🗑 Удалить",
+                        callback_data=f"delete_drink:{drink[0]}"
+                    )
+                ]
+            ]
+        )
+
         await message.answer(
-            f" ID: {drink[0]}\n"
+            f"ID: {drink[0]}\n"
             f"Название: {drink[1]}\n"
             f"Тип: {drink[2]}\n"
             f"Цена: {drink[3]} сом\n"
-            f"Описание: {drink[4]}"
+            f"Описание: {drink[4]}",
+            reply_markup=keyboard
         )
